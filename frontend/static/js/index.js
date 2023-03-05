@@ -1,13 +1,18 @@
-const navaigateTo = (url) => {
+import Dashboard from "./views/Dashboard.js";
+import Posts from "./views/Posts.js";
+import Settings from "./views/Settings.js";
+
+const navigateTo = (url) => {
   history.pushState(null, null, url);
   router();
 };
 
+//Defines router
 const router = async () => {
   const routes = [
-    { path: "/", view: () => console.log("Viewing Dashboard") },
-    { path: "/posts", view: () => console.log("Viewing Posts") },
-    { path: "/settings", view: () => console.log("Viewing Settings") },
+    { path: "/", view: Dashboard },
+    { path: "/posts", view: Posts },
+    { path: "/settings", view: Settings },
   ];
 
   //Test each route for potential match
@@ -20,14 +25,30 @@ const router = async () => {
 
   let match = potentialMatches.find((potentialMatch) => potentialMatch.isMatch);
 
-  console.log(match.route.view());
-};
+  if (!match) {
+    match = {
+      route: routes[0],
+      isMatch: true,
+    };
+  }
 
+  const view = new match.route.view();
+
+  document.querySelector("#root").innerHTML = await view.getHtml();
+};
+//calling route even in histor back and forward buttons.
+window.addEventListener("popstate", router);
+
+/*
+Once document content is loaded, we check if link with data-link attribute is clicked.
+If data-link is clicked, we prevent default behaviour or anchor tag and call functions
+navigateTo() and then router()
+*/
 document.addEventListener("DOMContentLoaded", () => {
   document.body.addEventListener("click", (e) => {
     if (e.target.matches("[data-link]")) {
       e.preventDefault();
-      navaigateTo(e.target.href);
+      navigateTo(e.target.href);
     }
   });
   router();
